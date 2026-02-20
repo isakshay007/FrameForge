@@ -115,7 +115,7 @@ class PyTorchBenchmark:
         if self.device.type == "cuda":
             props = torch.cuda.get_device_properties(0)
             self.gpu_name = props.name
-            self.vram_mb = props.total_mem // (1024 * 1024)
+            self.vram_mb = props.total_memory // (1024 * 1024)
             print(f"  GPU: {self.gpu_name} ({self.vram_mb} MB)")
         else:
             self.gpu_name = "CPU"

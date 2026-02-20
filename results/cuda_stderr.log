@@ -1,0 +1,28 @@
+========================================
+  FrameForge CUDA Shader Benchmark
+========================================
+  GPU:    NVIDIA L4
+  VRAM:   22563 MB
+  SMs:    58
+  Clock:  2040 MHz
+========================================
+
+  [1080p] (1920x1080)
+    Running vertex_shader...   0.01 ms avg
+    Running pixel_shader...    0.08 ms avg
+    Running postfx_blur...     0.14 ms avg
+    Running texture_sample...  0.39 ms avg
+
+  [1440p] (2560x1440)
+    Running vertex_shader...   0.02 ms avg
+    Running pixel_shader...    0.39 ms avg
+    Running postfx_blur...     0.38 ms avg
+    Running texture_sample...  0.71 ms avg
+
+  [4K] (3840x2160)
+    Running vertex_shader...   0.04 ms avg
+    Running pixel_shader...    0.87 ms avg
+    Running postfx_blur...     0.86 ms avg
+    Running texture_sample...  1.75 ms avg
+
+Done! 12 benchmarks completed.
