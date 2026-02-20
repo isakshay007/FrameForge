@@ -1,0 +1,25 @@
+{
+  "gpu": "NVIDIA L4",
+  "compute_capability": "8.9",
+  "vram_mb": 22563,
+  "sm_count": 58,
+  "clock_mhz": 2040,
+  "memory_clock_mhz": 6251,
+  "memory_bus_bits": 192,
+  "warmup_iters": 5,
+  "bench_iters": 50,
+  "results": [
+    {"kernel": "vertex_shader", "resolution": "1080p", "avg_ms": 0.0122, "min_ms": 0.0113, "max_ms": 0.0174, "throughput": 42403.95, "unit": "MVerts/s"},
+    {"kernel": "pixel_shader", "resolution": "1080p", "avg_ms": 0.0831, "min_ms": 0.0748, "max_ms": 0.0911, "throughput": 24938.24, "unit": "MPixels/s"},
+    {"kernel": "postfx_blur", "resolution": "1080p", "avg_ms": 0.1399, "min_ms": 0.1362, "max_ms": 0.1465, "throughput": 14825.25, "unit": "MPixels/s"},
+    {"kernel": "texture_sample", "resolution": "1080p", "avg_ms": 0.3868, "min_ms": 0.3840, "max_ms": 0.3963, "throughput": 5360.70, "unit": "MSamples/s"},
+    {"kernel": "vertex_shader", "resolution": "1440p", "avg_ms": 0.0179, "min_ms": 0.0164, "max_ms": 0.0236, "throughput": 51544.53, "unit": "MVerts/s"},
+    {"kernel": "pixel_shader", "resolution": "1440p", "avg_ms": 0.3851, "min_ms": 0.3798, "max_ms": 0.3932, "throughput": 9571.72, "unit": "MPixels/s"},
+    {"kernel": "postfx_blur", "resolution": "1440p", "avg_ms": 0.3787, "min_ms": 0.3748, "max_ms": 0.3830, "throughput": 9735.59, "unit": "MPixels/s"},
+    {"kernel": "texture_sample", "resolution": "1440p", "avg_ms": 0.7053, "min_ms": 0.6810, "max_ms": 0.7578, "throughput": 5226.77, "unit": "MSamples/s"},
+    {"kernel": "vertex_shader", "resolution": "4K", "avg_ms": 0.0368, "min_ms": 0.0348, "max_ms": 0.0614, "throughput": 56416.49, "unit": "MVerts/s"},
+    {"kernel": "pixel_shader", "resolution": "4K", "avg_ms": 0.8681, "min_ms": 0.8612, "max_ms": 0.8745, "throughput": 9554.38, "unit": "MPixels/s"},
+    {"kernel": "postfx_blur", "resolution": "4K", "avg_ms": 0.8552, "min_ms": 0.8499, "max_ms": 0.8714, "throughput": 9698.33, "unit": "MPixels/s"},
+    {"kernel": "texture_sample", "resolution": "4K", "avg_ms": 1.7513, "min_ms": 1.5196, "max_ms": 1.9456, "throughput": 4736.01, "unit": "MSamples/s"}
+  ]
+}

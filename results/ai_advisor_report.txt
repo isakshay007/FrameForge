@@ -1,0 +1,31 @@
+============================================================
+  FrameForge AI Performance Report
+  (Fallback mode)
+============================================================
+
+## CUDA Shader Benchmark Analysis
+
+⚠️ AI Advisor unavailable (no API key or connection error).
+Rule-based analysis: Review the benchmark data manually.
+Key things to check:
+- Frame times increasing >15% between resolutions = GPU bottleneck
+- Stutter rate >5% = inconsistent frame pacing
+- Smoothness ratio >2.0 = significant frame time spikes
+- P1 FPS much lower than Avg FPS = periodic hitching
+Set NVIDIA_API_KEY for AI-powered analysis.
+
+————————————————————————————————————————
+
+## FrameView Performance Analysis
+
+⚠️ AI Advisor unavailable (no API key or connection error).
+Rule-based analysis: Review the benchmark data manually.
+Key things to check:
+- Frame times increasing >15% between resolutions = GPU bottleneck
+- Stutter rate >5% = inconsistent frame pacing
+- Smoothness ratio >2.0 = significant frame time spikes
+- P1 FPS much lower than Avg FPS = periodic hitching
+Set NVIDIA_API_KEY for AI-powered analysis.
+
+————————————————————————————————————————
+

@@ -1,0 +1,7 @@
+Nsight Systems CLI not available on this Colab instance.
+CUDA Event timing was used instead (see cuda_results.json).
+NVTX annotations are present in cuda_bench.cu for local profiling.
+
+To profile locally:
+  nsys profile --trace=cuda,nvtx ./cuda_bench
+  nsys stats cuda_bench_profile.nsys-rep
