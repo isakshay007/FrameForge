@@ -1,0 +1,9 @@
+pandas
+numpy
+matplotlib
+psutil
+torch
+nvtx
+langchain-nvidia-ai-endpoints
+langchain-core
+langchain

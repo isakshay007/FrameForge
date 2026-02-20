@@ -1,0 +1,24 @@
+# Output
+results/*.png
+results/*.csv
+results/*.json
+results/*.txt
+nsight_profiles/*.nsys-rep
+nsight_profiles/*.sqlite
+nsight_profiles/*.qdstrm
+
+# Compiled
+src/cuda_bench
+src/cuda_bench.exe
+src/*.o
+src/*.log
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# OS
+.DS_Store
+.ipynb_checkpoints/
