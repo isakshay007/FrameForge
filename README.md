@@ -4,7 +4,7 @@
 
 FrameForge is an end-to-end GPU benchmarking and performance analysis platform. It ingests real NVIDIA FrameView capture data from actual gaming sessions, runs deep statistical analysis across 30+ telemetry channels, generates professional performance charts, detects performance regressions, and produces AI-powered optimization reports using DeepSeek R1 via NVIDIA NIM.
 
-This project was built and tested with **real benchmark data** captured from Red Dead Redemption 2 running at Ultra settings on my personal gaming PC.
+This project was built and tested with **real benchmark data** captured from Red Dead Redemption 2 running at Ultra settings on my personal gaming PC — not synthetic or simulated data.
 
 ---
 
@@ -70,63 +70,63 @@ All data is real, unmodified, and reproducible by running FrameView on the same 
 ## Performance Charts
 
 ### FPS Over Time — 1080p vs 1440p (30-frame rolling average)
-<img src="results/01_fps_timeline.png" alt="FPS Timeline" width="100%">
+<img src="notebooks/results/01_fps_timeline.png" alt="FPS Timeline" width="100%">
 
 Smooth FPS delivery at both resolutions. 1080p consistently above 90 FPS, 1440p stays above 60 FPS throughout the session with no performance degradation over time.
 
 ---
 
 ### Frame Time Distribution — 1080p vs 1440p Overlay
-<img src="results/02_frametime_dist.png" alt="Frame Time Distribution" width="100%">
+<img src="notebooks/results/02_frametime_dist.png" alt="Frame Time Distribution" width="100%">
 
 Tight, gaussian-shaped distributions at both resolutions. 1080p clusters around 10ms, 1440p around 13ms. Both distributions fall well below the 16.67ms (60 FPS) threshold. No bimodal patterns or long tails indicating rendering mode switches.
 
 ---
 
 ### FPS Percentile Comparison
-<img src="results/03_fps_percentiles.png" alt="FPS Percentiles" width="100%">
+<img src="notebooks/results/03_fps_percentiles.png" alt="FPS Percentiles" width="100%">
 
 Side-by-side percentile comparison showing 0.1% lows through 99.9th percentile. The gap between average FPS and 1% lows indicates frame time consistency — tighter gaps mean smoother gameplay.
 
 ---
 
 ### Latency Breakdown — Present API, Render, Display, Full PC Latency
-<img src="results/04_latency.png" alt="Latency Breakdown" width="100%">
+<img src="notebooks/results/04_latency.png" alt="Latency Breakdown" width="100%">
 
 Full latency pipeline decomposition. GPU render time is the dominant contributor at both resolutions. Present API overhead is negligible (<0.4ms). The jump from 41ms to 55ms total PC latency at 1440p is primarily driven by longer GPU render times.
 
 ---
 
 ### GPU Monitoring — Clock Speed, Temperature, Power Draw
-<img src="results/05_gpu_monitoring.png" alt="GPU Monitoring" width="100%">
+<img src="notebooks/results/05_gpu_monitoring.png" alt="GPU Monitoring" width="100%">
 
 Real-time GPU telemetry throughout both benchmark sessions. Clock speeds remain stable at 2820 MHz with no thermal throttling. Temperature stays flat at 65°C. Power draw consistent at 152-154W — the RTX 4060 Ti operates well within its thermal and power limits.
 
 ---
 
 ### Per-Core CPU Utilization (i5-11400F — 6 Cores / 12 Threads)
-<img src="results/06_cpu_cores.png" alt="CPU Per-Core Utilization" width="100%">
+<img src="notebooks/results/06_cpu_cores.png" alt="CPU Per-Core Utilization" width="100%">
 
 Per-thread utilization across all 12 logical cores. No single core is saturated — highest average is Core 2 at 61% during 1080p. At 1440p, all cores drop further as the GPU becomes the bottleneck and the CPU has more idle time between frame submissions.
 
 ---
 
 ### Power Efficiency — FPS per Watt
-<img src="results/07_efficiency.png" alt="Power Efficiency" width="100%">
+<img src="notebooks/results/07_efficiency.png" alt="Power Efficiency" width="100%">
 
 GPU-only and total system efficiency comparison. 1080p delivers 0.80 FPS/W while 1440p drops to 0.60 FPS/W — a 25% efficiency loss. The GPU draws similar power at both resolutions (~152W) but produces fewer frames at 1440p because each frame requires more shader and texture work.
 
 ---
 
 ### PC Latency Over Time (30-frame rolling average)
-<img src="results/08_latency_timeline.png" alt="Latency Timeline" width="100%">
+<img src="notebooks/results/08_latency_timeline.png" alt="Latency Timeline" width="100%">
 
 Input-to-photon latency tracked throughout both sessions. 1080p maintains ~41ms average, 1440p ~55ms average. Both are stable over time with no latency spikes, confirming no driver or scheduling issues.
 
 ---
 
 ### Full Analysis Dashboard — 6-Panel Overview
-<img src="results/rdr2_analysis.png" alt="RDR2 Full Analysis" width="100%">
+<img src="notebooks/results/rdr2_analysis.png" alt="RDR2 Full Analysis" width="100%">
 
 Combined dashboard showing FPS over time, frame time distributions, and GPU temperature/power for both resolutions in a single view.
 
@@ -144,7 +144,7 @@ Key AI findings:
 - Best hardware upgrade: RTX 4070 Super for 1440p gaming
 - VSync is helping the experience by preventing tearing with minimal latency penalty at these frame rates
 
-The complete report is saved in `results/ai_advisor_report.txt`.
+The complete report is saved in `notebooks/results/ai_advisor_report.txt`.
 
 ---
 
@@ -159,25 +159,25 @@ FrameForge/
 │   ├── frameview_parser.py        # NVIDIA FrameView CSV parser and analyzer
 │   ├── regression_detector.py     # Automated regression detection engine
 │   ├── main.py                    # CLI pipeline orchestrator
+│   └── Makefile                   # nvcc compilation and Nsight profiling
 │
 ├── frameview_logs/                # Real FrameView CSV captures from RDR2
 │   ├── RDR2_1080p_Ultra_DX12.csv  # 12,151 frames — 1920x1080 Ultra
 │   └── RDR2_1440p_Ultra_DX12.csv  # 7,430 frames — 2560x1440 Ultra
 │
-├── results/                       # Generated charts and AI report
-│   ├── ai_advisor_report.txt      # DeepSeek R1 comprehensive analysis
-│   ├── 01_fps_timeline.png        # FPS over time overlay
-│   ├── 02_frametime_dist.png      # Frame time distribution
-│   ├── 03_fps_percentiles.png     # FPS percentile comparison
-│   ├── 04_latency.png             # Latency pipeline breakdown
-│   ├── 05_gpu_monitoring.png      # GPU clock/temp/power monitoring
-│   ├── 06_cpu_cores.png           # Per-core CPU utilization
-│   ├── 07_efficiency.png          # Power efficiency (FPS/Watt)
-│   ├── 08_latency_timeline.png    # PC latency over time
-│   └── rdr2_analysis.png          # 6-panel combined dashboard
-│
 ├── notebooks/
-│   └── FrameForge_Analysis.ipynb  # Google Colab analysis notebook
+│   ├── FrameForge_Analysis.ipynb  # Google Colab analysis notebook
+│   └── results/                   # Generated charts and AI report
+│       ├── ai_advisor_report.txt  # DeepSeek R1 comprehensive analysis
+│       ├── 01_fps_timeline.png    # FPS over time overlay
+│       ├── 02_frametime_dist.png  # Frame time distribution
+│       ├── 03_fps_percentiles.png # FPS percentile comparison
+│       ├── 04_latency.png         # Latency pipeline breakdown
+│       ├── 05_gpu_monitoring.png  # GPU clock/temp/power monitoring
+│       ├── 06_cpu_cores.png       # Per-core CPU utilization
+│       ├── 07_efficiency.png      # Power efficiency (FPS/Watt)
+│       ├── 08_latency_timeline.png# PC latency over time
+│       └── rdr2_analysis.png      # 6-panel combined dashboard
 │
 ├── requirements.txt
 └── README.md
