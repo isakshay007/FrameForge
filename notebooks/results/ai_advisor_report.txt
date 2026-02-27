@@ -1,0 +1,218 @@
+======================================================================
+  FrameForge AI Performance Report — COMPREHENSIVE EDITION
+  Powered by DeepSeek R1 via NVIDIA NIM
+  System: RTX 4060 Ti + i5-11400F
+  Game: Red Dead Redemption 2 — Ultra — DX12
+======================================================================
+
+# NVIDIA GPU Performance Engineer Analysis: Red Dead Redemption 2 FrameView Data
+
+## 1. BOTTLENECK IDENTIFICATION
+
+**1080p (1920×1080):**
+- **GPU-bound:** GPU utilization averages 98.4% (max 99%) while CPU utilization averages 53.4% (max 69%). This is a clear GPU bottleneck scenario.
+- **CPU thread analysis:** No single core is maxed out. Core2 shows highest average utilization at 61% with peak 74%, Core0 at 57% (peak 75%), Core8 at 59% (peak 70%). All cores remain below 75% average, indicating no thread saturation.
+- **Render queue depth:** Average 1.27 frames queued (max 3.26). Values >2 indicate occasional queuing delays, but average <1.5 suggests minimal driver pre-rendering. This is optimal for latency.
+- **CPU utilization explanation:** The higher CPU utilization at 1080p (53.4% vs 42.9% at 1440p) occurs because the GPU is pushing more frames (99.7 fps vs 75.6 fps), requiring more CPU work per second for draw calls, game logic, and API overhead. This is NOT a CPU bottleneck—it's the CPU working harder to feed a faster GPU.
+
+**1440p (2560×1440):**
+- **Severely GPU-bound:** GPU utilization 98.8% (essentially pinned at 99%), CPU utilization drops to 42.9%. The GPU is completely saturated.
+- **Per-core analysis:** Even lower utilization across all cores (Core8 highest at 53% average). No thread bottlenecks whatsoever.
+- **Render queue depth:** Increases slightly to 1.40 average (max 3.25), indicating slightly more queuing as GPU struggles with heavier workload.
+
+**Conclusion:** System is GPU-bound at both resolutions, more severely at 1440p. The RTX 4060 Ti is the limiting factor, not the i5-11400F.
+
+## 2. THERMAL & POWER DEEP DIVE
+
+**GPU Clock Stability:**
+- **1080p:** 2817 MHz average with 50 clock drops (>5% below max). These represent only 0.4% of samples—statistically insignificant. The GPU maintains 2820 MHz boost clock exceptionally well.
+- **1440p:** 2803 MHz average with ZERO clock drops. Even more stable under heavier load.
+- **Thermal throttling assessment:** NO thermal throttling. GPU temps max at 67°C (1080p) and 66°C (1440p), well below the 83°C throttling threshold for Ada Lovelace. Clock drops at 1080p are likely due to transient workload variations, not thermal limits.
+
+**CPU Power Behavior:**
+- **1080p:** CPU averages 65.2W with brief peaks to 79.9W, slightly exceeding the 65W TDP by 0.2W average. This is normal PL2 (Power Limit 2) boost behavior for Intel 11th Gen. The CPU briefly draws extra power during heavy frames, then settles.
+- **1440p:** CPU averages 53.5W, well within TDP limits. Lower utilization reduces power draw.
+- **Consequences:** The brief TDP exceedance at 1080p is completely normal and within Intel specifications. No thermal issues—CPU max temp is 86°C, safe for this generation.
+
+**Power Efficiency Analysis:**
+- **1080p:** 0.8015 FPS/W (GPU-only), 0.6690 FPS/W (total system)
+- **1440p:** 0.6046 FPS/W (GPU-only), 0.4989 FPS/W (total system)
+- **Why similar power but fewer frames?** The RTX 4060 Ti draws ~152W at both resolutions because it's operating at near-maximum utilization in both cases. At 1440p, each frame requires more pixel shading, texture sampling, and raster operations, consuming similar power but producing fewer frames. This is expected behavior when GPU-bound.
+
+**Cooling Solution Adequacy:**
+- **GPU:** Excellent cooling. 65-67°C under full load indicates substantial thermal headroom.
+- **CPU:** Adequate cooling. 79-86°C peaks are acceptable for air cooling on an i5-11400F under gaming load.
+- **Verdict:** Cooling is more than adequate—no thermal constraints on performance.
+
+## 3. LATENCY PIPELINE BREAKDOWN
+
+**1080p Latency Chain:**
+- Present API: 0.336ms (driver overhead)
+- Render Present Latency: 12.675ms (GPU render time)
+- Display Scanout: 15.571ms (until displayed)
+- **Total PC Latency: 41.267ms** (input-to-photon)
+
+**1440p Latency Chain:**
+- Present API: 0.313ms
+- Render Present Latency: 18.330ms (+45% increase)
+- Display Scanout: 21.206ms
+- **Total PC Latency: 54.815ms** (+32.8% increase)
+
+**Biggest Latency Contributor:** GPU render time is the dominant factor at both resolutions (12.7ms at 1080p, 18.3ms at 1440p). This accounts for 31% of total latency at 1080p and 33% at 1440p.
+
+**VSync Penalty Quantification:**
+- VSync ON with SyncInterval=1 adds approximately 1-2 frames of latency (10-20ms at 1080p, 13-26ms at 1440p) depending on frame timing relative to refresh cycle.
+- The exact penalty varies per frame but is embedded in the "MsUntilDisplayed" metric.
+
+**NVIDIA Reflex Potential Impact:**
+- Reflex would reduce render queue depth (currently 1.27-1.40) to near-zero.
+- Estimated latency reduction: 3-8ms based on queue depth elimination and CPU render submission optimization.
+- At 1080p, Reflex could potentially reduce total latency from 41.3ms to ~35ms.
+- **Important:** Reflex works best when CPU-bound or with high render queue depth. This system is GPU-bound, so benefits would be modest but still valuable for competitive play.
+
+**Render Queue Depth Contribution:**
+- Average 1.27-1.40 frames queued adds 10-14ms of latency (one frame's worth).
+- This is moderate queuing—not excessive but contributes meaningfully to total latency.
+
+## 4. FRAME PACING & SMOOTHNESS DEEP ANALYSIS
+
+**Pipeline Synchronization:**
+- Simulation vs Present vs Display times are nearly identical (0.000-0.001ms differences).
+- This indicates excellent pipeline synchronization with minimal API overhead or scheduling issues.
+
+**Frame Time Distribution Analysis:**
+- **1080p:** Distribution is **right-skewed gaussian**. 95.4% of frames fall between 8-13ms (77-125 FPS). Tight clustering with a long tail on the high end (99th percentile at 12.626ms).
+- **1440p:** Distribution is **more symmetric but wider**. 94.3% of frames fall between 10-16.7ms (60-100 FPS). Wider IQR (1.821ms vs 1.049ms at 1080p) indicates less consistency.
+- **No bimodal distribution** observed—no evidence of engine switching between different rendering modes.
+
+**Session Stability:**
+- **1080p:** Session drift of -10.25% (negative = improving). Performance actually IMPROVES from 94.1 FPS in Q1 to 104.8 FPS in Q4. This could be due to shader compilation completing or thermal equilibrium.
+- **1440p:** Session drift of -3.49%. Mild improvement from 72.5 FPS in Q1 to 75.1 FPS in Q4.
+- **Conclusion:** No performance degradation over time—excellent stability.
+
+**IQR (Interquartile Range) Analysis:**
+- **1080p:** IQR of 1.049ms (25th-75th percentile). Extremely tight—middle 50% of frames vary by only ±0.5ms from median.
+- **1440p:** IQR of 1.821ms. Wider but still respectable for open-world game.
+- **Interpretation:** 1080p pacing is exceptionally smooth; 1440p shows more variance due to GPU load fluctuations.
+
+**Stutter Assessment:**
+- **1080p:** 10 mild stutters (>2x avg frame time = >20ms) in 12,151 frames = 0.082% rate.
+- **1440p:** 4 mild stutters in 7,430 frames = 0.054% rate.
+- **Context:** RDR2 is known for occasional streaming stutters during world traversal. These rates are EXCELLENT—far below the 1% threshold where stutters become noticeable. The single moderate stutter at 1080p (0.008%) is statistically negligible.
+
+## 5. RESOLUTION SCALING ANALYSIS
+
+**Pixel Count vs FPS Relationship:**
+- Pixel count increases 77.8% (2.07M → 3.69M pixels).
+- FPS decreases 24.2% (99.7 → 75.6 FPS).
+- Frame time increases 31.8% (10.03ms → 13.23ms).
+- **Analysis:** The FPS drop is LESS severe than the pixel increase. This indicates the workload isn't purely pixel-bound—some elements (CPU work, geometry, draw calls) don't scale with resolution. Expected scaling would be ~40% FPS drop for pure pixel shading; actual 24% drop suggests other bottlenecks ease at higher resolution.
+
+**RTX 4060 Ti Memory Bandwidth Sufficiency:**
+- 288 GB/s bandwidth with 18 Gbps GDDR6.
+- At 1440p Ultra: Texture streaming, shadow maps, and high-resolution assets increase memory pressure.
+- **Assessment:** Memory bandwidth is NOT a bottleneck here. GPU core compute (shader/texture units) is the limiting factor, not memory throughput. Utilization would show memory controller saturation if bandwidth-limited.
+
+**CPU Utilization Drop Explanation:**
+- CPU utilization drops from 53.4% to 42.9% (-19.7%) because:
+  1. Fewer frames per second (99.7 → 75.6) means less CPU work per second.
+  2. GPU takes longer per frame, giving CPU more idle time between submissions.
+  3. This is CLASSIC GPU-bottleneck behavior—CPU waits for GPU to complete.
+
+**Efficiency Loss at 1440p:**
+- GPU-only efficiency drops 24.6% (0.8015 → 0.6046 FPS/W).
+- This is NORMAL for Ada Lovelace and all GPU architectures. Higher resolutions stress shader units more, reducing instructions-per-watt efficiency.
+- The AD106 chip in the 4060 Ti has excellent efficiency at 1080p but shows expected diminishing returns at 1440p.
+
+## 6. TOP 5 RDR2 OPTIMIZATION RECOMMENDATIONS
+
+**Ranked by Visual Impact vs FPS Gain Tradeoff:**
+
+1. **Water Physics Quality: High → Medium**
+   - **Estimated FPS Gain:** 8-12% at 1440p
+   - **Visual Impact:** Minimal in most gameplay. Only affects water interaction physics, not visual quality.
+   - **Technical Reason:** CPU-intensive physics calculations that scale poorly.
+
+2. **Reflection Quality: Ultra → High**
+   - **Estimated FPS Gain:** 6-9% at 1440p
+   - **Visual Impact:** Moderate reduction in reflection sharpness and distance.
+   - **Technical Reason:** Screen-space reflections are expensive at higher resolutions.
+
+3. **Shadow Quality: Ultra → High**
+   - **Estimated FPS Gain:** 5-7% at 1440p
+   - **Visual Impact:** Slightly softer shadows, reduced cascade resolution.
+   - **Technical Reason:** Shadow map resolution scales with screen resolution.
+
+4. **Lighting Quality: Ultra → High**
+   - **Estimated FPS Gain:** 4-6% at 1440p
+   - **Visual Impact:** Reduced global illumination quality, slightly less realistic lighting.
+   - **Technical Reason:** Volumetric lighting and GI computations are shader-intensive.
+
+5. **Particle Quality: Ultra → High**
+   - **Estimated FPS Gain:** 3-5% at 1440p
+   - **Visual Impact:** Fewer particles, slightly less dense effects.
+   - **Technical Reason:** Particle simulation and rendering scales with viewport resolution.
+
+**DO NOT TOUCH:**
+- Texture Quality: VRAM is sufficient (8GB), and texture filtering is cheap.
+- Geometry LOD: Already well optimized in RDR2.
+- TAA: Disabling will cause severe aliasing; performance gain minimal.
+
+## 7. DLSS / FSR ANALYSIS
+
+**DLSS Quality at 1440p:**
+- **Output Resolution:** 1706×960 internal rendering, upscaled to 2560×1440.
+- **Expected FPS Gain:** 35-45% based on typical DLSS scaling.
+- **Estimated FPS:** 102-110 FPS at 1440p with DLSS Quality.
+- **Latency Impact:** Would reduce render latency from 18.3ms to ~13ms.
+
+**DLSS Balanced vs Quality:**
+- **Balanced:** 1483×834 internal rendering. Additional 15% performance over Quality.
+- **Recommendation:** **DLSS Quality** is optimal for this scenario. The 4060 Ti can achieve 75+ FPS native, so Quality mode provides best image quality while reaching 100+ FPS. Balanced would introduce more noticeable artifacts.
+
+**FSR 3 Frame Generation:**
+- **Potential Benefit:** Could double apparent FPS to ~150 FPS.
+- **Concerns:** Adds 1-2 frames of latency (13-26ms). With existing 54.8ms latency, this could push input lag to 70+ ms.
+- **Recommendation:** **Not recommended** for this setup. The added latency would be noticeable, and native 75 FPS is already smooth with VSync.
+
+**DLSS Artifacts in RDR2:**
+- Known issues: Slight ghosting on moving foliage and hair.
+- TAA in RDR2 already has ghosting, so DLSS may actually improve in some scenarios.
+- Overall, DLSS Quality is highly recommended—artifacts are minimal compared to performance gain.
+
+## 8. GAMING EXPERIENCE VERDICT
+
+**1080p Experience: EXCELLENT**
+- **Justification:** 99.7 FPS average with exceptional frame pacing (IQR 1.049ms). 99th percentile at 12.6ms means consistent performance. 1% lows at 79.2 FPS ensure smooth gameplay. Stutter rate of 0.082% is negligible.
+- **VSync Impact:** VSync is providing tear-free experience with minimal penalty due to high frame rate matching refresh cycles well.
+
+**1440p Experience: VERY GOOD**
+- **Justification:** 75.6 FPS average is smooth for single-player gameplay. 1% lows at 57.2 FPS are acceptable but occasionally noticeable. Wider frame time distribution (IQR 1.821ms) means less consistent pacing than 1080p.
+- **VSync Impact:** More noticeable latency penalty at lower frame rate, but still preferable to tearing.
+
+**Sweet Spot:** **1080p** is the optimal resolution for this hardware combination. The RTX 4060 Ti delivers exceptionally smooth performance at this resolution. 1440p is playable but shows the GPU's limits.
+
+**VSync Assessment:** **Helping** the experience. With frame rates consistently above 60 FPS, VSync provides tear-free display without major stuttering. The alternative (VSync off) would reduce latency by ~10ms but introduce tearing that's distracting in a visually stunning game like RDR2.
+
+## 9. HARDWARE UPGRADE RECOMMENDATIONS
+
+**Single Most Impactful Upgrade:**
+- **GPU upgrade to RTX 4070 or RX 7800 XT.**
+- **Rationale:** The system is GPU-bound at both resolutions. A 30-40% more powerful GPU would directly translate to 30-40% higher FPS at 1440p, making 100+ FPS achievable.
+
+**i5-11400F Bottleneck Analysis:**
+- **At 1080p:** NOT bottlenecking. CPU utilization averages 53% with no core saturation.
+- **If GPU upgraded:** With an RTX 4070 Ti or higher, the CPU might become a partial bottleneck at 1080p (estimated 70-80% utilization).
+- **Current pairing:** i5-11400F is well-matched with RTX 4060 Ti. No urgent need for CPU upgrade.
+
+**RAM/SSD Impact:**
+- **RAM:** 16GB is sufficient for RDR2. Upgrade would provide minimal benefit (<5%).
+- **RAM Speed:** Current DDR4 speed unknown, but unlikely to be bottleneck given CPU utilization.
+- **SSD:** Already assumed based on smooth asset streaming (low stutter rate). NVMe SSD provides optimal experience.
+
+**Best Value GPU Upgrade for 1440p:**
+- **RTX 4070 Super:** ~60% faster than 4060 Ti, would deliver ~120 FPS at 1440p Ultra with DLSS Quality.
+- **RX 7800 XT:** ~55% faster, excellent 1440p performance, better raw rasterization but lacks DLSS.
+- **Recommendation:** **RTX 4070 Super** for DLSS 3.5 and better feature set, assuming budget allows.
+
+**Final Engineering Assessment:** This is a well-balanced system performing exactly as expected for the hardware combination. The RTX 4060 Ti is operating at its design limits for 1440p Ultra gaming, while the i5-11400F has ample headroom. Optimization through selective settings adjustments and DLSS implementation would provide the most immediate improvement to the 1440p experience.
